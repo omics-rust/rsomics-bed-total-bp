@@ -1,11 +1,7 @@
 use rsomics_common::{Result, RsomicsError};
 use std::io::BufRead;
 
-/// Sum `end - start` across all BED records; return the total base-pair count.
-///
-/// Header lines (`#`) and blank lines are skipped. Overlapping intervals are
-/// NOT merged — this reports the raw sum, identical to `bedtools genomecov -bg | awk '{sum+=($3-$2)} END{print sum}'`
-/// on a pre-sorted, non-merged BED.
+/// Raw sum of `end - start`; overlaps are NOT merged.
 pub fn total_bp<R: BufRead>(reader: R) -> Result<u64> {
     let mut total: u64 = 0;
     for line in reader.lines() {
