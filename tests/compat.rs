@@ -1,5 +1,5 @@
 use rsomics_bed_total_bp::total_bp;
-use std::io::Cursor;
+use std::io::{BufReader, Cursor};
 
 #[test]
 fn single_interval() {
@@ -37,4 +37,16 @@ fn awk_equiv() {
         let got = total_bp(Cursor::new(*input)).unwrap();
         assert_eq!(got, *expected, "input: {input}");
     }
+}
+
+// Differential against the canonical reference `awk '{sum+=($3-$2)} END{print sum}'`.
+// total_bp.upstream.expected was captured from that awk on input.bed (GNU awk 5.1.0).
+// awk's `print` and our `println!` both emit "<int>\n", so the goldens compare byte-for-byte.
+#[test]
+fn matches_awk_golden() {
+    let input = include_str!("golden/input.bed");
+    let golden = include_str!("golden/total_bp.upstream.expected");
+
+    let ours = total_bp(BufReader::new(Cursor::new(input))).unwrap();
+    assert_eq!(format!("{ours}\n"), golden);
 }
